@@ -68,6 +68,14 @@ async function run() {
             next()
         }
 
+        // user get req.
+        app.get('/users/:email',async(req,res)=>{
+            const email = req.params.email
+            const query = {email : email}
+            const result = await userCollection.findOne(query)
+            res.send(result)
+        })
+
         app.post('/users', async (req, res) => {
             const user = req.body;
             const query = { email: user?.email }
@@ -76,6 +84,20 @@ async function run() {
                 return res.send({ message: 'The User already existing', insertedId: null })
             }
             const result = await userCollection.insertOne(user)
+            res.send(result)
+        })
+        // user data update
+        app.patch('/users/:email',async(req,res)=>{
+            const user = req.body;
+            const email = req.params.email;
+            const query = {email: email}
+            const optional = {upsert : true}
+            const updateDoc = {
+                $set: {
+                    ...user
+                }
+            }
+            const result = await userCollection.updateOne(query,updateDoc,optional)
             res.send(result)
         })
 
