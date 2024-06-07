@@ -32,6 +32,7 @@ async function run() {
         const userCollection = client.db('BloodFound').collection('users');
         const districtCollection = client.db('BloodFound').collection('district');
         const upazilaCollection = client.db('BloodFound').collection('upazila');
+        const donationCollection = client.db('BloodFound').collection('donation');
 
 
         // jwt token api making related
@@ -69,9 +70,9 @@ async function run() {
         }
 
         // user get req.
-        app.get('/users/:email',async(req,res)=>{
+        app.get('/users/:email', async (req, res) => {
             const email = req.params.email
-            const query = {email : email}
+            const query = { email: email }
             const result = await userCollection.findOne(query)
             res.send(result)
         })
@@ -87,17 +88,56 @@ async function run() {
             res.send(result)
         })
         // user data update
-        app.patch('/users/:email',async(req,res)=>{
+        app.patch('/users/:email', async (req, res) => {
             const user = req.body;
             const email = req.params.email;
-            const query = {email: email}
-            const optional = {upsert : true}
+            const query = { email: email }
+            const optional = { upsert: true }
             const updateDoc = {
                 $set: {
                     ...user
                 }
             }
-            const result = await userCollection.updateOne(query,updateDoc,optional)
+            const result = await userCollection.updateOne(query, updateDoc, optional)
+            res.send(result)
+        })
+        // donation all api 
+        app.get('/donation', async (req, res) => {
+            const result = await donationCollection.find().toArray()
+            res.send(result)
+        })
+
+        app.get('/donationDetails/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = {_id: new ObjectId(id)}
+            const result = await donationCollection.findOne(query)
+            res.send(result)
+        })
+
+        app.patch('/donationDetails/:id',async(req,res)=>{
+            const id = req.params.id;
+            const data = req.body;
+            const query = {_id: new ObjectId(id)}
+            const updateDoc = {
+                $set: {
+                    ...data
+                }
+            }
+            const result = await donationCollection.updateOne(query,updateDoc)
+            res.send(result)
+        })
+
+        // specific user data get api
+        app.get('/donation/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email: email }
+            const result = await donationCollection.find(query).toArray()
+            res.send(result)
+        })
+
+        app.post('/donation', async (req, res) => {
+            const donation = req.body;
+            const result = await donationCollection.insertOne(donation)
             res.send(result)
         })
 
