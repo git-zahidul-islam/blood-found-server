@@ -158,6 +158,13 @@ async function run() {
             res.send(result)
         })
 
+        // admin stats
+        app.get('/admin-stats',verifyToken,async(req,res)=>{    
+            const user = await userCollection.estimatedDocumentCount()
+            const totalDonationRequest = await donationCollection.estimatedDocumentCount()
+            res.send({user,totalDonationRequest})
+        })
+
 
 
 
