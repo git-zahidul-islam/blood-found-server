@@ -33,6 +33,7 @@ async function run() {
         const districtCollection = client.db('BloodFound').collection('district');
         const upazilaCollection = client.db('BloodFound').collection('upazila');
         const donationCollection = client.db('BloodFound').collection('donation');
+        const blogCollection = client.db('BloodFound').collection('blog');
 
 
         // jwt token api making related
@@ -62,7 +63,7 @@ async function run() {
             const email = req.decoded.email;
             const query = { email: email }
             const user = await userCollection.findOne(query)
-            const isAdmin = user?.role === 'admin'
+            const isAdmin = user?.role == 'admin'
             if (!isAdmin) {
                 return res.status(403).send({ message: 'Forbidden Access' })
             }
@@ -108,7 +109,7 @@ async function run() {
         })
         // donation all api 
         // admin data fetch
-        app.get('/donation',verifyToken,adminVerify, async (req, res) => {
+        app.get('/donation',verifyToken, async (req, res) => {
             const result = await donationCollection.find().toArray()
             res.send(result)
         })
@@ -172,6 +173,38 @@ async function run() {
             res.send({ user, totalDonationRequest })
         })
 
+        // blog fetch
+        app.get('/blog',async(req,res)=>{
+            const filter = req.query.filter;
+            console.log(filter);
+            let query = {}
+            if (filter) query = { status: filter }
+            const result = await blogCollection.find(query).toArray()
+            res.send(result)
+        })
+
+        // blog post api
+        app.post('/blog',async(req,res)=>{
+            const body = req.body;
+            console.log("the blog",body);
+            const result = await blogCollection.insertOne(body)
+            res.send(result)
+        })
+
+        app.patch('/blog/:id',verifyToken,adminVerify,async(req,res)=>{
+            const id = req.params.id;
+            const status = req.body;
+            console.log(id);
+            console.log("status",status);
+            const filter = {_id: new ObjectId(id)}
+            const updateDoc = {
+                $set: {
+                    ...status
+                }
+            }
+            const result = await blogCollection.updateOne(filter,updateDoc)
+            res.send(result)
+        })
 
 
 
@@ -180,13 +213,15 @@ async function run() {
 
 
         // this is admin check ,
-        app.get('/users/admin/:email', verifyToken, async (req, res) => {
+        app.get('/users/admin/:email',verifyToken, async (req, res) => {
             const email = req.params.email;
             if (email !== req.decoded.email) {
                 return res.status(403).send({ message: "forbidden access" })
             }
             const query = { email: email }
+            console.log(query);
             const user = await userCollection.findOne(query)
+            console.log(user?.role);
             let admin = false
             if (user) {
                 admin = user.role === 'admin'
