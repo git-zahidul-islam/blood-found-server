@@ -205,6 +205,24 @@ async function run() {
             const result = await blogCollection.updateOne(filter,updateDoc)
             res.send(result)
         })
+        // blog delete 
+        app.delete('/blog/:id',verifyToken,adminVerify,async(req,res)=>{
+            const id = req.params.id;
+            const email = req.decoded.email
+            console.log("decode",email);
+            
+            const filter = {email: email}
+            const user = await userCollection.findOne(filter)
+            let result
+            if(user?.role == "admin"){
+                const query = {_id: new ObjectId(id)}
+                result = await blogCollection.deleteOne(query)
+            }
+            res.send(result)
+            // console.log("admin email",user);
+            // console.log(id);
+
+        })
 
 
 
