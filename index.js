@@ -107,7 +107,8 @@ async function run() {
             res.send(result)
         })
         // donation all api 
-        app.get('/donation', async (req, res) => {
+        // admin data fetch
+        app.get('/donation',verifyToken,adminVerify, async (req, res) => {
             const result = await donationCollection.find().toArray()
             res.send(result)
         })
@@ -132,7 +133,7 @@ async function run() {
             res.send(result)
         })
 
-        app.delete('/donationDelete/:id', async (req, res) => {
+        app.delete('/donationDelete/:id',verifyToken, async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) }
             const result = await donationCollection.deleteOne(query)
