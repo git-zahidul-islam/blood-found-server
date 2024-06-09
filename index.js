@@ -70,10 +70,15 @@ async function run() {
         }
 
         // user get req.
-        app.get('/users/:email', async (req, res) => {
+        app.get('/users/:email', verifyToken, async (req, res) => {
             const email = req.params.email
             const query = { email: email }
             const result = await userCollection.findOne(query)
+            res.send(result)
+        })
+        // user data get only admin
+        app.get('/users', async(req, res) => {
+            const result = await userCollection.find().toArray()
             res.send(result)
         })
 
@@ -109,27 +114,27 @@ async function run() {
 
         app.get('/donationDetails/:id', async (req, res) => {
             const id = req.params.id;
-            const query = {_id: new ObjectId(id)}
+            const query = { _id: new ObjectId(id) }
             const result = await donationCollection.findOne(query)
             res.send(result)
         })
 
-        app.patch('/donationDetails/:id',async(req,res)=>{
+        app.patch('/donationDetails/:id', async (req, res) => {
             const id = req.params.id;
             const data = req.body;
-            const query = {_id: new ObjectId(id)}
+            const query = { _id: new ObjectId(id) }
             const updateDoc = {
                 $set: {
                     ...data
                 }
             }
-            const result = await donationCollection.updateOne(query,updateDoc)
+            const result = await donationCollection.updateOne(query, updateDoc)
             res.send(result)
         })
 
-        app.delete('/donationDelete/:id',async(req,res)=>{
+        app.delete('/donationDelete/:id', async (req, res) => {
             const id = req.params.id;
-            const query = {_id: new ObjectId(id)}
+            const query = { _id: new ObjectId(id) }
             const result = await donationCollection.deleteOne(query)
             res.send(result)
         })
@@ -158,11 +163,12 @@ async function run() {
             res.send(result)
         })
 
+        // admin all api
         // admin stats
-        app.get('/admin-stats',verifyToken,async(req,res)=>{    
+        app.get('/admin-stats', verifyToken, async (req, res) => {
             const user = await userCollection.estimatedDocumentCount()
             const totalDonationRequest = await donationCollection.estimatedDocumentCount()
-            res.send({user,totalDonationRequest})
+            res.send({ user, totalDonationRequest })
         })
 
 
@@ -172,8 +178,8 @@ async function run() {
 
 
 
-        // the last two api is not project related , only for knowing , TODO:use verifyToken
-        app.get('/users/admin/:email', async (req, res) => {
+        // this is admin check ,
+        app.get('/users/admin/:email', verifyToken, async (req, res) => {
             const email = req.params.email;
             if (email !== req.decoded.email) {
                 return res.status(403).send({ message: "forbidden access" })
@@ -188,17 +194,46 @@ async function run() {
         })
 
         // TODO: must use verifyToken, adminVerify
+        // user status change
         app.patch('/users/admin/:id', async (req, res) => {
             const id = req.params.id;
-            const filter = { _id: new ObjectId(id) }
+            const status = req.body;
+            const filter = {_id: new ObjectId(id)}
             const updateDoc = {
                 $set: {
-                    role: 'admin'
+                    ...status
                 }
             }
-            const result = await userCollection.updateOne(filter, updateDoc)
+            const result = await userCollection.updateOne(filter,updateDoc)
             res.send(result)
         })
+        // volunteer make
+        app.patch('/users_role/admin/:id',async(req,res)=>{
+            const id = req.params.id;
+            const volunteer = req.body;
+            const filter = {_id: new ObjectId(id)}
+            const updateDoc = {
+                $set: {
+                    ...volunteer
+                }
+            }
+            const result = await userCollection.updateOne(filter,updateDoc)
+            res.send(result)
+        })
+        
+        app.patch('/users_admin_role/admin/:id',async(req,res)=>{
+            const id = req.params.id;
+            const admin = req.body;
+            const filter = {_id: new ObjectId(id)}
+            const updateDoc = {
+                $set: {
+                    ...admin
+                }
+            }
+            const result = await userCollection.updateOne(filter,updateDoc)
+            res.send(result)
+        })
+
 
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
