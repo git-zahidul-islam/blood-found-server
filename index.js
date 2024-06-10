@@ -78,18 +78,18 @@ async function run() {
             res.send(result)
         })
         // user data get only admin
-        app.get('/users',verifyToken,adminVerify, async(req, res) => {
+        app.get('/users', verifyToken, adminVerify, async (req, res) => {
             const result = await userCollection.find().toArray()
             res.send(result)
         })
 
-        app.get('/usersRole/:email',async(req,res)=>{
+        app.get('/usersRole/:email', async (req, res) => {
             const email = req.params.email;
-            const query = {email: email}
+            const query = { email: email }
             const options = {
                 projection: { role: 1, _id: 0 },
             }
-            const result = await userCollection.findOne(query,options)
+            const result = await userCollection.findOne(query, options)
             res.send(result)
         })
 
@@ -120,7 +120,7 @@ async function run() {
         })
         // donation all api 
         // admin data fetch
-        app.get('/donation',verifyToken, async (req, res) => {
+        app.get('/donation', verifyToken, async (req, res) => {
             const result = await donationCollection.find().toArray()
             res.send(result)
         })
@@ -145,7 +145,7 @@ async function run() {
             res.send(result)
         })
 
-        app.delete('/donationDelete/:id',verifyToken, async (req, res) => {
+        app.delete('/donationDelete/:id', verifyToken, async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) }
             const result = await donationCollection.deleteOne(query)
@@ -185,7 +185,7 @@ async function run() {
         })
 
         // blog fetch
-        app.get('/blog',async(req,res)=>{
+        app.get('/blog', async (req, res) => {
             const filter = req.query.filter;
             console.log(filter);
             let query = {}
@@ -195,38 +195,38 @@ async function run() {
         })
 
         // blog post api
-        app.post('/blog',async(req,res)=>{
+        app.post('/blog', async (req, res) => {
             const body = req.body;
-            console.log("the blog",body);
+            console.log("the blog", body);
             const result = await blogCollection.insertOne(body)
             res.send(result)
         })
 
-        app.patch('/blog/:id',verifyToken,adminVerify,async(req,res)=>{
+        app.patch('/blog/:id', verifyToken, adminVerify, async (req, res) => {
             const id = req.params.id;
             const status = req.body;
             console.log(id);
-            console.log("status",status);
-            const filter = {_id: new ObjectId(id)}
+            console.log("status", status);
+            const filter = { _id: new ObjectId(id) }
             const updateDoc = {
                 $set: {
                     ...status
                 }
             }
-            const result = await blogCollection.updateOne(filter,updateDoc)
+            const result = await blogCollection.updateOne(filter, updateDoc)
             res.send(result)
         })
         // blog delete 
-        app.delete('/blog/:id',verifyToken,adminVerify,async(req,res)=>{
+        app.delete('/blog/:id', verifyToken, adminVerify, async (req, res) => {
             const id = req.params.id;
             const email = req.decoded.email
-            console.log("decode",email);
+            console.log("decode", email);
 
-            const filter = {email: email}
+            const filter = { email: email }
             const user = await userCollection.findOne(filter)
             let result
-            if(user?.role == "admin"){
-                const query = {_id: new ObjectId(id)}
+            if (user?.role == "admin") {
+                const query = { _id: new ObjectId(id) }
                 result = await blogCollection.deleteOne(query)
             }
             res.send(result)
@@ -234,7 +234,18 @@ async function run() {
             // console.log(id);
 
         })
-
+        // publish blog api
+        app.get('/blogShow', async (req, res) => {
+            const query = { status: 'published' }
+            const result = await blogCollection.find(query).toArray()
+            res.send(result)
+        })
+        app.get('/blogShow/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = {_id: new ObjectId(id)}
+            const result = await blogCollection.findOne(query)
+            res.send(result)
+        })
 
 
 
@@ -242,7 +253,7 @@ async function run() {
 
 
         // this is admin check ,
-        app.get('/users/admin/:email',verifyToken, async (req, res) => {
+        app.get('/users/admin/:email', verifyToken, async (req, res) => {
             const email = req.params.email;
             if (email !== req.decoded.email) {
                 return res.status(403).send({ message: "forbidden access" })
@@ -259,7 +270,7 @@ async function run() {
         })
         // Volunteer check
 
-        app.get('/users/volunteer/:email',verifyToken, async (req, res) => {
+        app.get('/users/volunteer/:email', verifyToken, async (req, res) => {
             const email = req.params.email;
             if (email !== req.decoded.email) {
                 return res.status(403).send({ message: "forbidden access" })
@@ -280,106 +291,106 @@ async function run() {
         app.patch('/users/admin/:id', async (req, res) => {
             const id = req.params.id;
             const status = req.body;
-            const filter = {_id: new ObjectId(id)}
+            const filter = { _id: new ObjectId(id) }
             const updateDoc = {
                 $set: {
                     ...status
                 }
             }
-            const result = await userCollection.updateOne(filter,updateDoc)
+            const result = await userCollection.updateOne(filter, updateDoc)
             res.send(result)
         })
         // volunteer make
-        app.patch('/users_role/admin/:id',async(req,res)=>{
+        app.patch('/users_role/admin/:id', async (req, res) => {
             const id = req.params.id;
             const volunteer = req.body;
-            const filter = {_id: new ObjectId(id)}
+            const filter = { _id: new ObjectId(id) }
             const updateDoc = {
                 $set: {
                     ...volunteer
                 }
             }
-            const result = await userCollection.updateOne(filter,updateDoc)
+            const result = await userCollection.updateOne(filter, updateDoc)
             res.send(result)
         })
         // volunteer do status change
-        app.patch('/volunteer-role/:id',async(req,res)=>{
+        app.patch('/volunteer-role/:id', async (req, res) => {
             const id = req.params.id;
             const body = req.body;
-            const query = {_id: new ObjectId(id)}
+            const query = { _id: new ObjectId(id) }
             const updateDoc = {
                 $set: {
                     ...body
                 }
             }
-            const result = await donationCollection.updateOne(query,updateDoc)
+            const result = await donationCollection.updateOne(query, updateDoc)
             res.send(result)
         })
-        
-        app.patch('/users_admin_role/admin/:id',async(req,res)=>{
+
+        app.patch('/users_admin_role/admin/:id', async (req, res) => {
             const id = req.params.id;
             const admin = req.body;
-            const filter = {_id: new ObjectId(id)}
+            const filter = { _id: new ObjectId(id) }
             const updateDoc = {
                 $set: {
                     ...admin
                 }
             }
-            const result = await userCollection.updateOne(filter,updateDoc)
+            const result = await userCollection.updateOne(filter, updateDoc)
             res.send(result)
         })
 
         // public data 
-        app.get('/donationStatus',async(req,res)=>{
-            const query = {status: 'pending'}
+        app.get('/donationStatus', async (req, res) => {
+            const query = { status: 'pending' }
             const result = await donationCollection.find(query).toArray()
             res.send(result)
         })
         // public single data 
-        app.get('/donationStatus/:id',async(req,res)=>{
+        app.get('/donationStatus/:id', async (req, res) => {
             const id = req.params.id;
-            const query = {_id: new ObjectId(id)};
+            const query = { _id: new ObjectId(id) };
             const result = await donationCollection.findOne(query);
             res.send(result);
         })
         // donate a user blood 
-        app.patch('/donated/:id',async(req,res)=>{
+        app.patch('/donated/:id', async (req, res) => {
             const id = req.params.id;
             const body = req.body;
-            const query = {_id: new ObjectId(id)}
-            const filter = {upsert: true}
+            const query = { _id: new ObjectId(id) }
+            const filter = { upsert: true }
             const updateDoc = {
                 $set: {
                     ...body
                 }
             }
-            const result = await donationCollection.updateOne(query,updateDoc,filter)
+            const result = await donationCollection.updateOne(query, updateDoc, filter)
             res.send(result)
         })
         // donation done
-        app.patch('/donationDone/:id',async(req,res)=>{
+        app.patch('/donationDone/:id', async (req, res) => {
             const id = req.params.id;
             const body = req.body;
-            const query = {_id: new ObjectId(id)}
+            const query = { _id: new ObjectId(id) }
             const updateDoc = {
                 $set: {
                     ...body
                 }
             }
-            const result = await donationCollection.updateOne(query,updateDoc)
+            const result = await donationCollection.updateOne(query, updateDoc)
             res.send(result)
         })
         // donation delete
-        app.patch('/donationCanceled/:id',async(req,res)=>{
+        app.patch('/donationCanceled/:id', async (req, res) => {
             const id = req.params.id;
             const body = req.body;
-            const query = {_id: new ObjectId(id)}
+            const query = { _id: new ObjectId(id) }
             const updateDoc = {
                 $set: {
                     ...body
                 }
             }
-            const result = await donationCollection.updateOne(query,updateDoc)
+            const result = await donationCollection.updateOne(query, updateDoc)
             res.send(result)
         })
 
