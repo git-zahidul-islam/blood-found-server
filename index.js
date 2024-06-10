@@ -329,6 +329,60 @@ async function run() {
             res.send(result)
         })
 
+        // public data 
+        app.get('/donationStatus',async(req,res)=>{
+            const query = {status: 'pending'}
+            const result = await donationCollection.find(query).toArray()
+            res.send(result)
+        })
+        // public single data 
+        app.get('/donationStatus/:id',async(req,res)=>{
+            const id = req.params.id;
+            const query = {_id: new ObjectId(id)};
+            const result = await donationCollection.findOne(query);
+            res.send(result);
+        })
+        // donate a user blood 
+        app.patch('/donated/:id',async(req,res)=>{
+            const id = req.params.id;
+            const body = req.body;
+            const query = {_id: new ObjectId(id)}
+            const filter = {upsert: true}
+            const updateDoc = {
+                $set: {
+                    ...body
+                }
+            }
+            const result = await donationCollection.updateOne(query,updateDoc,filter)
+            res.send(result)
+        })
+        // donation done
+        app.patch('/donationDone/:id',async(req,res)=>{
+            const id = req.params.id;
+            const body = req.body;
+            const query = {_id: new ObjectId(id)}
+            const updateDoc = {
+                $set: {
+                    ...body
+                }
+            }
+            const result = await donationCollection.updateOne(query,updateDoc)
+            res.send(result)
+        })
+        // donation delete
+        app.patch('/donationCanceled/:id',async(req,res)=>{
+            const id = req.params.id;
+            const body = req.body;
+            const query = {_id: new ObjectId(id)}
+            const updateDoc = {
+                $set: {
+                    ...body
+                }
+            }
+            const result = await donationCollection.updateOne(query,updateDoc)
+            res.send(result)
+        })
+
 
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
