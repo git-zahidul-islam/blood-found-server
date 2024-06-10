@@ -78,10 +78,21 @@ async function run() {
             res.send(result)
         })
         // user data get only admin
-        app.get('/users', async(req, res) => {
+        app.get('/users',verifyToken,adminVerify, async(req, res) => {
             const result = await userCollection.find().toArray()
             res.send(result)
         })
+
+        app.get('/usersRole/:email',async(req,res)=>{
+            const email = req.params.email;
+            const query = {email: email}
+            const options = {
+                projection: { role: 1, _id: 0 },
+            }
+            const result = await userCollection.findOne(query,options)
+            res.send(result)
+        })
+
 
         app.post('/users', async (req, res) => {
             const user = req.body;
@@ -210,7 +221,7 @@ async function run() {
             const id = req.params.id;
             const email = req.decoded.email
             console.log("decode",email);
-            
+
             const filter = {email: email}
             const user = await userCollection.findOne(filter)
             let result
@@ -246,6 +257,23 @@ async function run() {
             }
             res.send({ admin })
         })
+        // Volunteer check
+
+        app.get('/users/volunteer/:email',verifyToken, async (req, res) => {
+            const email = req.params.email;
+            if (email !== req.decoded.email) {
+                return res.status(403).send({ message: "forbidden access" })
+            }
+            const query = { email: email }
+            console.log(query);
+            const user = await userCollection.findOne(query)
+            console.log(user?.role);
+            let volunteer;
+            if (user) {
+                volunteer = user.role == 'volunteer'
+            }
+            res.send({ volunteer })
+        })
 
         // TODO: must use verifyToken, adminVerify
         // user status change
@@ -272,6 +300,19 @@ async function run() {
                 }
             }
             const result = await userCollection.updateOne(filter,updateDoc)
+            res.send(result)
+        })
+        // volunteer do status change
+        app.patch('/volunteer-role/:id',async(req,res)=>{
+            const id = req.params.id;
+            const body = req.body;
+            const query = {_id: new ObjectId(id)}
+            const updateDoc = {
+                $set: {
+                    ...body
+                }
+            }
+            const result = await donationCollection.updateOne(query,updateDoc)
             res.send(result)
         })
         
