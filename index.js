@@ -79,7 +79,11 @@ async function run() {
         })
         // user data get only admin
         app.get('/users', verifyToken, adminVerify, async (req, res) => {
-            const result = await userCollection.find().toArray()
+            const filter = req.query.filter;
+            console.log(filter);
+            let query = {}
+            if (filter) query = { status: filter }
+            const result = await userCollection.find(query).toArray()
             res.send(result)
         })
 
@@ -155,7 +159,11 @@ async function run() {
         // specific user data get api
         app.get('/donation/:email', async (req, res) => {
             const email = req.params.email;
+            const body = req.query.filter;
             const query = { email: email }
+            if (body){ 
+                query.status = body
+             }
             const result = await donationCollection.find(query).toArray()
             res.send(result)
         })
@@ -182,6 +190,14 @@ async function run() {
             const user = await userCollection.estimatedDocumentCount()
             const totalDonationRequest = await donationCollection.estimatedDocumentCount()
             res.send({ user, totalDonationRequest })
+        })
+        // public stats
+        app.get('/public-stats',async(req,res)=>{
+            const user = await userCollection.estimatedDocumentCount()
+            const district = await districtCollection.estimatedDocumentCount()
+            const upazile = await upazilaCollection.estimatedDocumentCount()
+            const blog = await blogCollection.estimatedDocumentCount()
+            res.send({user,district,upazile,blog})
         })
 
         // blog fetch
@@ -391,6 +407,18 @@ async function run() {
                 }
             }
             const result = await donationCollection.updateOne(query, updateDoc)
+            res.send(result)
+        })
+        // user updated data show 
+        app.get('/update-user-data/:email',async(req,res)=>{
+            const email = req.params.email;
+            const query = {email: email}
+            const option = {
+                projection: {
+                    _id: 0, name: 1, photo: 1
+                }
+            }
+            const result = await userCollection.findOne(query,option)
             res.send(result)
         })
 
