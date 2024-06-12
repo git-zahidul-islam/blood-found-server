@@ -200,10 +200,12 @@ async function run() {
         // public stats
         app.get('/public-stats',async(req,res)=>{
             const user = await userCollection.estimatedDocumentCount()
-            const district = await districtCollection.estimatedDocumentCount()
-            const upazile = await upazilaCollection.estimatedDocumentCount()
+            const pendingQuery = {status: 'pending'}
+            const pending = await donationCollection.countDocuments(pendingQuery)
+            const submitQuery = {status: 'done'}
+            const done = await donationCollection.countDocuments(submitQuery)
             const blog = await blogCollection.estimatedDocumentCount()
-            res.send({user,district,upazile,blog})
+            res.send({user,blog,pending,done})
         })
 
         // blog fetch
