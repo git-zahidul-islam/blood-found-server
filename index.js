@@ -8,8 +8,14 @@ const port = process.env.PORT || 5000
 
 // middleware
 app.use(express.json())
-app.use(cors())
-// app.use(express.static("public"));
+app.use(cors({
+    origin: [
+        "http://localhost:5173",
+        "https://blood-found-513a1.web.app",
+        "https://blood-found-513a1.firebaseapp.com",
+      ]
+}))
+
 
 // mongodb data  [change this data]
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
@@ -80,7 +86,7 @@ async function run() {
         // user data get only admin
         app.get('/users', verifyToken, adminVerify, async (req, res) => {
             const filter = req.query.filter;
-            console.log(filter);
+            // console.log(filter);
             let query = {}
             if (filter) query = { status: filter }
             const result = await userCollection.find(query).toArray()
@@ -203,7 +209,7 @@ async function run() {
         // blog fetch
         app.get('/blog', async (req, res) => {
             const filter = req.query.filter;
-            console.log(filter);
+            // console.log(filter);
             let query = {}
             if (filter) query = { status: filter }
             const result = await blogCollection.find(query).toArray()
@@ -213,7 +219,7 @@ async function run() {
         // blog post api
         app.post('/blog', async (req, res) => {
             const body = req.body;
-            console.log("the blog", body);
+            // console.log("the blog", body);
             const result = await blogCollection.insertOne(body)
             res.send(result)
         })
@@ -221,8 +227,8 @@ async function run() {
         app.patch('/blog/:id', verifyToken, adminVerify, async (req, res) => {
             const id = req.params.id;
             const status = req.body;
-            console.log(id);
-            console.log("status", status);
+            // console.log(id);
+            // console.log("status", status);
             const filter = { _id: new ObjectId(id) }
             const updateDoc = {
                 $set: {
@@ -236,7 +242,7 @@ async function run() {
         app.delete('/blog/:id', verifyToken, adminVerify, async (req, res) => {
             const id = req.params.id;
             const email = req.decoded.email
-            console.log("decode", email);
+            // console.log("decode", email);
 
             const filter = { email: email }
             const user = await userCollection.findOne(filter)
@@ -267,9 +273,9 @@ async function run() {
                 return res.status(403).send({ message: "forbidden access" })
             }
             const query = { email: email }
-            console.log(query);
+            // console.log(query);
             const user = await userCollection.findOne(query)
-            console.log(user?.role);
+            // console.log(user?.role);
             let admin = false
             if (user) {
                 admin = user.role === 'admin'
@@ -284,9 +290,9 @@ async function run() {
                 return res.status(403).send({ message: "forbidden access" })
             }
             const query = { email: email }
-            console.log(query);
+            // console.log(query);
             const user = await userCollection.findOne(query)
-            console.log(user?.role);
+            // console.log(user?.role);
             let volunteer;
             if (user) {
                 volunteer = user.role == 'volunteer'
@@ -416,7 +422,7 @@ async function run() {
 
 
         // Send a ping to confirm a successful connection
-        await client.db("admin").command({ ping: 1 });
+        // await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
         // Ensures that the client will close when you finish/error
