@@ -246,9 +246,6 @@ async function run() {
                 result = await blogCollection.deleteOne(query)
             }
             res.send(result)
-            // console.log("admin email",user);
-            // console.log(id);
-
         })
         // publish blog api
         app.get('/blogShow', async (req, res) => {
@@ -262,11 +259,6 @@ async function run() {
             const result = await blogCollection.findOne(query)
             res.send(result)
         })
-
-
-
-
-
 
         // this is admin check ,
         app.get('/users/admin/:email', verifyToken, async (req, res) => {
@@ -319,11 +311,11 @@ async function run() {
         // volunteer make
         app.patch('/users_role/admin/:id', async (req, res) => {
             const id = req.params.id;
-            const volunteer = req.body;
+            const admin = req.body;
             const filter = { _id: new ObjectId(id) }
             const updateDoc = {
                 $set: {
-                    ...volunteer
+                    ...admin
                 }
             }
             const result = await userCollection.updateOne(filter, updateDoc)
@@ -345,11 +337,11 @@ async function run() {
 
         app.patch('/users_admin_role/admin/:id', async (req, res) => {
             const id = req.params.id;
-            const admin = req.body;
+            const volunteer = req.body;
             const filter = { _id: new ObjectId(id) }
             const updateDoc = {
                 $set: {
-                    ...admin
+                    ...volunteer
                 }
             }
             const result = await userCollection.updateOne(filter, updateDoc)
