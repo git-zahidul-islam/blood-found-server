@@ -86,10 +86,13 @@ async function run() {
         // user data get only admin
         app.get('/users', verifyToken, adminVerify, async (req, res) => {
             const filter = req.query.filter;
+            const page = parseInt(req.query.page) -1;
+            const size = parseInt(req.query.size);
+            // console.log("siiii",size,page);
             // console.log(filter);
             let query = {}
             if (filter) query = { status: filter }
-            const result = await userCollection.find(query).toArray()
+            const result = await userCollection.find(query).skip(page * size).limit(size).toArray()
             res.send(result)
         })
 
@@ -422,22 +425,31 @@ async function run() {
             res.send(result)
         })
         // search data 
-        app.post("/search", async (req, res) => {
-            const { bloodGroup, district, upazila } = req.body;
-            console.log("Search Request:", req.body);
-            const query = {
-              bloodGroup,
-              district,
-              upazila,
-              role: "donor",
-              status: "active",
-            };
-            console.log("Query:", query);
-            const result = await usersCollection.find(query).toArray();
-            console.log("Search Result:", result);
-            res.send(result);
-          });
+        // app.get("/search", async (req, res) => {
+        //     const data = req.body;
+        //     // console.log("Search Request:", req.body);
+        //     console.log("the",data);
+        //     return
+        //     const query = {
+        //       bloodGroup,
+        //       district,
+        //       upazila,
+        //       role: "donor",
+        //       status: "active",
+        //     };
+        //     console.log("Query:", query);
+        //     const result = await userCollection.find(query).toArray();
+        //     console.log("Search Result:", result);
+        //     res.send(result);
+        //   });
 
+        app.get('/usersCount',async(req,res)=>{
+            const userCount = await userCollection.countDocuments()
+            res.send({result: userCount})
+          })
+
+
+         
 
         // Send a ping to confirm a successful connection
         // await client.db("admin").command({ ping: 1 });
