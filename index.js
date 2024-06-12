@@ -421,6 +421,22 @@ async function run() {
             const result = await userCollection.findOne(query,option)
             res.send(result)
         })
+        // search data 
+        app.post("/search", async (req, res) => {
+            const { bloodGroup, district, upazila } = req.body;
+            console.log("Search Request:", req.body);
+            const query = {
+              bloodGroup,
+              district,
+              upazila,
+              role: "donor",
+              status: "active",
+            };
+            console.log("Query:", query);
+            const result = await usersCollection.find(query).toArray();
+            console.log("Search Result:", result);
+            res.send(result);
+          });
 
 
         // Send a ping to confirm a successful connection
