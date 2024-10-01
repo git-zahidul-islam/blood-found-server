@@ -13,7 +13,7 @@ app.use(cors({
         "http://localhost:5173",
         "https://blood-found-513a1.web.app",
         "https://blood-found-513a1.firebaseapp.com",
-      ]
+    ]
 }))
 
 
@@ -86,7 +86,7 @@ async function run() {
         // user data get only admin
         app.get('/users', verifyToken, adminVerify, async (req, res) => {
             const filter = req.query.filter;
-            const page = parseInt(req.query.page) -1;
+            const page = parseInt(req.query.page) - 1;
             const size = parseInt(req.query.size);
             // console.log("siiii",size,page);
             // console.log(filter);
@@ -170,9 +170,9 @@ async function run() {
             const email = req.params.email;
             const body = req.query.filter;
             const query = { email: email }
-            if (body){ 
+            if (body) {
                 query.status = body
-             }
+            }
             const result = await donationCollection.find(query).toArray()
             res.send(result)
         })
@@ -201,14 +201,14 @@ async function run() {
             res.send({ user, totalDonationRequest })
         })
         // public stats
-        app.get('/public-stats',async(req,res)=>{
+        app.get('/public-stats', async (req, res) => {
             const user = await userCollection.estimatedDocumentCount()
-            const pendingQuery = {status: 'pending'}
+            const pendingQuery = { status: 'pending' }
             const pending = await donationCollection.countDocuments(pendingQuery)
-            const submitQuery = {status: 'done'}
+            const submitQuery = { status: 'done' }
             const done = await donationCollection.countDocuments(submitQuery)
             const blog = await blogCollection.estimatedDocumentCount()
-            res.send({user,blog,pending,done})
+            res.send({ user, blog, pending, done })
         })
 
         // blog fetch
@@ -266,7 +266,7 @@ async function run() {
         })
         app.get('/blogShow/:id', async (req, res) => {
             const id = req.params.id;
-            const query = {_id: new ObjectId(id)}
+            const query = { _id: new ObjectId(id) }
             const result = await blogCollection.findOne(query)
             res.send(result)
         })
@@ -413,15 +413,15 @@ async function run() {
             res.send(result)
         })
         // user updated data show 
-        app.get('/update-user-data/:email',async(req,res)=>{
+        app.get('/update-user-data/:email', async (req, res) => {
             const email = req.params.email;
-            const query = {email: email}
+            const query = { email: email }
             const option = {
                 projection: {
                     _id: 0, name: 1, photo: 1
                 }
             }
-            const result = await userCollection.findOne(query,option)
+            const result = await userCollection.findOne(query, option)
             res.send(result)
         })
         // search data 
@@ -443,13 +443,41 @@ async function run() {
         //     res.send(result);
         //   });
 
-        app.get('/usersCount',async(req,res)=>{
+        app.get('/usersCount', async (req, res) => {
             const userCount = await userCollection.countDocuments()
-            res.send({result: userCount})
-          })
+            res.send({ result: userCount })
+        })
+
+        // blood doner finding
+        app.get('/get-blood-donor-emails', async (req, res) => {
+            try {
+                const bloodDonors = await donationCollection.find(
+                    { bloodDonar: { $exists: true },status: "done" }, // Filter for documents with bloodDonar
+                    { projection: { 'bloodDonar.email': 1, _id: 0 } } // Only return the email field
+                ).toArray();
+
+                const donorEmails = bloodDonors.map(donor => donor.bloodDonar.email); // Extract emails
+
+                if (donorEmails.length > 0) {
+                    // Now find user details (name, photo, bloodGroup) from userCollection using donorEmails
+                    const donorDetails = await userCollection.find(
+                      { email: { $in: donorEmails } }, // Find users whose email is in donorEmails array
+                      { projection: { name: 1, photo: 1, bloodGroup: 1, _id: 0 } } // Only return name, photo, and bloodGroup
+                    ).toArray();
+              
+                    res.json({
+                      message: 'Donor details found',
+                      donors: donorDetails,
+                    })
+                }
+            } catch (error) {
+                console.error(error);
+                res.status(500).json({ message: 'Server error' });
+            }
+        });
 
 
-         
+
 
         // Send a ping to confirm a successful connection
         // await client.db("admin").command({ ping: 1 });
